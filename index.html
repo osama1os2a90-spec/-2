@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار طبقة الأوزون</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --error-color: #f44336;
+            --correct-color: #4caf50;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .screen {
+            display: none;
+            padding: 20px;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .question-container {
+            margin-bottom: 20px;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .option {
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        
+        .option.correct {
+            background-color: var(--correct-color);
+            color: white;
+        }
+        
+        .option.incorrect {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: #e8f5e9;
+            border: 1px solid var(--correct-color);
+            color: var(--correct-color);
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: #ffebee;
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+            display: block;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--primary-dark);
+        }
+        
+        .progress {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .result-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .result-correct {
+            border-left: 5px solid var(--correct-color);
+        }
+        
+        .result-incorrect {
+            border-left: 5px solid var(--error-color);
+        }
+        
+        .test-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .test-info h3 {
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        .test-info ul {
+            padding-right: 20px;
+        }
+        
+        .test-info li {
+            margin-bottom: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>اختبار طبقة الأوزون</h1>
+            <div class="form-group">
+                <label for="student-name">اسم الطالب:</label>
+                <input type="text" id="student-name" placeholder="أدخل اسمك هنا">
+            </div>
+            <div class="form-group">
+                <label for="student-class">الشعبة:</label>
+                <select id="student-class">
+                    <option value="">اختر الشعبة</option>
+                    <option value="1">الشعبة 1</option>
+                    <option value="2">الشعبة 2</option>
+                    <option value="3">الشعبة 3</option>
+                    <option value="4">الشعبة 4</option>
+                    <option value="5">الشعبة 5</option>
+                    <option value="6">الشعبة 6</option>
+                    <option value="7">الشعبة 7</option>
+                </select>
+            </div>
+            <div class="test-info">
+                <h3>تفاصيل الاختبار:</h3>
+                <ul>
+                    <li>عدد الأسئلة: 50 سؤال</li>
+                    <li>مدة الاختبار: 30 دقيقة</li>
+                    <li>يجب الإجابة على جميع الأسئلة</li>
+                    <li>لا يمكن تخطي الأسئلة</li>
+                    <li>سيتم عرض الإجابة الصحيحة عند الإجابة الخاطئة</li>
+                    <li>سيتم عرض تقرير مفصل في نهاية الاختبار</li>
+                </ul>
+            </div>
+            <button id="start-btn" class="btn-primary">بدء الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="quiz-screen" class="screen">
+            <div class="timer" id="timer">30:00</div>
+            <div class="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div id="progress-text" style="text-align: center; margin-top: 5px;">سؤال 1 من 50</div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question-text" id="question-text"></div>
+                <div class="options-container" id="options-container"></div>
+                <div class="feedback" id="feedback"></div>
+            </div>
+            
+            <div class="navigation">
+                <button id="prev-btn" class="btn-secondary">السابق</button>
+                <button id="next-btn" class="btn-primary">التالي</button>
+            </div>
+        </div>
+
+        <!-- شاشة النتائج -->
+        <div id="result-screen" class="screen">
+            <h1>نتيجة الاختبار</h1>
+            <div id="student-info" style="text-align: center; margin-bottom: 20px;"></div>
+            
+            <div style="text-align: center; font-size: 24px; margin: 20px 0;">
+                <p>الإجابات الصحيحة: <span id="correct-answers">0</span> من <span id="total-questions">0</span></p>
+                <p>النسبة المئوية: <span id="percentage">0%</span></p>
+            </div>
+            
+            <div id="results-container"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button id="restart-btn" class="btn-primary">إعادة الاختبار</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- إضافة ملفات الصوت -->
+    <audio id="correct-sound" preload="auto">
+        <source src="correct.mp3" type="audio/mpeg">
+        <source src="correct.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        // بيانات الأسئلة (تم اختصارها للتوضيح)
+        const questions = [
+            {
+                text: "ما الهدف الأساسي من اجتماع الزعماء في مونتريال؟",
+                options: [
+                    "توقيع معاهدات تجارية",
+                    "حماية طبقة الأوزون",
+                    "زيادة إنتاج الطاقة"
+                ],
+                correct: 1
+            },
+            {
+                text: "عُقد اجتماع مونتريال عام 1987 من أجل:",
+                options: [
+                    "تقليل انبعاثات ثاني أكسيد الكربون",
+                    "وضع بروتوكول لحماية الأوزون",
+                    "تطوير الطاقة الشمسية"
+                ],
+                correct: 1
+            },
+            {
+                text: "اتفاقية مونتريال اهتمت بشكل خاص بـ:",
+                options: [
+                    "حماية الغابات",
+                    "حماية طبقة الأوزون من التلوث",
+                    "حماية البحار"
+                ],
+                correct: 1
+            },
+            {
+                text: "من النتائج المباشرة لاجتماع مونتريال:",
+                options: [
+                    "حظر استخدام مركبات الكلوروفلوروكربون (CFCs)",
+                    "منع استخدام السيارات",
+                    "فرض ضرائب على الوقود"
+                ],
+                correct: 0
+            },
+            {
+                text: "ما العامل الرئيسي المؤثر في تكون ثقب الأوزون فوق القطب الجنوبي؟",
+                options: [
+                    "مركبات الكلوروفلوروكربون",
+                    "غاز الأكسجين فقط",
+                    "بخار الماء"
+                ],
+                correct: 0
+            },
+            {
+                text: "من المواد الكيميائية التي تساهم في تدمير الأوزون:",
+                options: [
+                    "النيتروجين",
+                    "الكلوروفلوروكربون",
+                    "ثاني أكسيد الكربون"
+                ],
+                correct: 1
+            },
+            {
+                text: "لماذا يظهر ثقب الأوزون بوضوح فوق القارة القطبية الجنوبية؟",
+                options: [
+                    "لأنها أكثر المناطق حرارة",
+                    "بسبب الظروف الجوية الباردة التي تُنشط التفاعلات الكيميائية",
+                    "لأنها قريبة من خط الاستواء"
+                ],
+                correct: 1
+            },
+            {
+                text: "من العوامل الطبيعية التي تساعد على اتساع ثقب الأوزون:",
+                options: [
+                    "شدة الرياح القطبية",
+                    "زيادة الغازات الدفيئة",
+                    "نشاط البراكين"
+                ],
+                correct: 0
+            },
+            {
+                text: "لماذا يتكون معظم الأوزون عند خط الاستواء؟",
+                options: [
+                    "بسبب قوة أشعة الشمس فوق البنفسجية",
+                    "بسبب وجود غابات مطيرة",
+                    "بسبب كثرة الأمطار"
+                ],
+                correct: 0
+            },
+            {
+                text: "تكوّن الأوزون يعتمد على:",
+                options: [
+                    "الضوء فوق البنفسجي",
+                    "الضوء المرئي",
+                    "ضوء الأشعة تحت الحمراء"
+                ],
+                correct: 0
+            }
+            // يمكنك إضافة باقي الأسئلة هنا
+        ];
+
+        // متغيرات التطبيق
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let timer;
+        let timeLeft = 30 * 60; // 30 دقيقة بالثواني
+
+        // عناصر DOM
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const studentNameInput = document.getElementById('student-name');
+        const studentClassSelect = document.getElementById('student-class');
+        const startBtn = document.getElementById('start-btn');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedback = document.getElementById('feedback');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const timerDisplay = document.getElementById('timer');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const studentInfo = document.getElementById('student-info');
+        const correctAnswers = document.getElementById('correct-answers');
+        const totalQuestions = document.getElementById('total-questions');
+        const percentage = document.getElementById('percentage');
+        const resultsContainer = document.getElementById('results-container');
+        const restartBtn = document.getElementById('restart-btn');
+        const correctSound = document.getElementById('correct-sound');
+
+        // بدء الاختبار
+        startBtn.addEventListener('click', function() {
+            const name = studentNameInput.value.trim();
+            const className = studentClassSelect.value;
+            
+            if (name === '' || className === '') {
+                alert('يرجى إدخال اسم الطالب واختيار الشعبة');
+                return;
+            }
+            
+            startScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            
+            userAnswers = new Array(questions.length).fill(null);
+            currentQuestion = 0;
+            timeLeft = 30 * 60;
+            
+            startTimer();
+            loadQuestion();
+        });
+
+        // تشغيل المؤقت
+        function startTimer() {
+            updateTimerDisplay();
+            
+            timer = setInterval(function() {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        // تحديث عرض المؤقت
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // تحميل السؤال الحالي
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            questionText.textContent = question.text;
+            
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                if (userAnswers[currentQuestion] === index) {
+                    optionElement.classList.add('selected');
+                }
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            feedback.className = 'feedback';
+            feedback.style.display = 'none';
+            
+            updateNavigationButtons();
+            updateProgress();
+        }
+
+        // اختيار إجابة
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // إزالة التحديد من جميع الخيارات
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // إضافة التحديد للخيار المختار
+            options[optionIndex].classList.add('selected');
+            
+            // التحقق من الإجابة وعرض التغذية الراجعة
+            const question = questions[currentQuestion];
+            if (optionIndex === question.correct) {
+                feedback.textContent = 'إجابة صحيحة!';
+                feedback.className = 'feedback correct';
+                // تشغيل صوت الإجابة الصحيحة فقط
+                correctSound.play();
+            } else {
+                feedback.textContent = `إجابة خاطئة! الإجابة الصحيحة هي: ${question.options[question.correct]}`;
+                feedback.className = 'feedback incorrect';
+                // لا يوجد صوت للإجابة الخاطئة
+            }
+            feedback.style.display = 'block';
+            
+            // تحديث زر التالي
+            updateNavigationButtons();
+        }
+
+        // تحديث أزرار التنقل
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentQuestion === 0;
+            
+            // لا يمكن الانتقال للسؤال التالي إلا بعد الإجابة على السؤال الحالي
+            nextBtn.disabled = userAnswers[currentQuestion] === null;
+            
+            // تغيير نص زر التالي إذا كان هذا آخر سؤال
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.textContent = 'إنهاء الاختبار';
+            } else {
+                nextBtn.textContent = 'التالي';
+            }
+        }
+
+        // تحديث شريط التقدم
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `سؤال ${currentQuestion + 1} من ${questions.length}`;
+        }
+
+        // الانتقال للسؤال السابق
+        prevBtn.addEventListener('click', function() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        });
+
+        // الانتقال للسؤال التالي أو إنهاء الاختبار
+        nextBtn.addEventListener('click', function() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        });
+
+        // إنهاء الاختبار وعرض النتائج
+        function finishQuiz() {
+            clearInterval(timer);
+            
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            // حساب النتائج
+            let correctCount = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === questions[index].correct) {
+                    correctCount++;
+                }
+            });
+            
+            const percentageValue = Math.round((correctCount / questions.length) * 100);
+            
+            // عرض معلومات الطالب
+            studentInfo.textContent = `${studentNameInput.value} - الشعبة ${studentClassSelect.value}`;
+            
+            // عرض النتائج
+            correctAnswers.textContent = correctCount;
+            totalQuestions.textContent = questions.length;
+            percentage.textContent = `${percentageValue}%`;
+            
+            // عرض تفاصيل الإجابات
+            resultsContainer.innerHTML = '';
+            userAnswers.forEach((answer, index) => {
+                const question = questions[index];
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item ${answer === question.correct ? 'result-correct' : 'result-incorrect'}`;
+                
+                const questionText = document.createElement('p');
+                questionText.textContent = `س ${index + 1}: ${question.text}`;
+                resultItem.appendChild(questionText);
+                
+                const userAnswerText = document.createElement('p');
+                userAnswerText.textContent = `إجابتك: ${answer !== null ? question.options[answer] : 'لم تجب'}`;
+                resultItem.appendChild(userAnswerText);
+                
+                if (answer !== question.correct) {
+                    const correctAnswerText = document.createElement('p');
+                    correctAnswerText.textContent = `الإجابة الصحيحة: ${question.options[question.correct]}`;
+                    resultItem.appendChild(correctAnswerText);
+                }
+                
+                resultsContainer.appendChild(resultItem);
+            });
+        }
+
+        // إعادة الاختبار
+        restartBtn.addEventListener('click', function() {
+            resultScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            
+            // إعادة تعيين الحقول
+            studentNameInput.value = '';
+            studentClassSelect.value = '';
+        });
+
+        // تهيئة التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            // تعطيل زر التالي في البداية
+            nextBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>
